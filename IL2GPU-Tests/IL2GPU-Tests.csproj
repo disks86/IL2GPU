@@ -1,0 +1,52 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <RootNamespace>IL2GPU_Tests</RootNamespace>
+
+    <IsPackable>false</IsPackable>
+
+    <Company>Christopher Joseph Dean Schaefer</Company>
+
+    <Product>IL2GPU</Product>
+
+    <Authors>Christopher Joseph Dean Schaefer</Authors>
+
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+
+    <PackageProjectUrl>https://www.patreon.com/techtinker</PackageProjectUrl>
+
+    <RepositoryUrl>https://github.com/disks86/IL2GPU</RepositoryUrl>
+
+    <RepositoryType>GIT</RepositoryType>
+
+    <NeutralLanguage>en-US</NeutralLanguage>
+
+    <AssemblyVersion>19.6.28.1</AssemblyVersion>
+
+    <FileVersion>19.6.28.1</FileVersion>
+
+    <Copyright>Copyright (c) 2019 Christopher Schaefer</Copyright>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.0" />
+    <PackageReference Include="MSTest.TestAdapter" Version="1.3.2" />
+    <PackageReference Include="MSTest.TestFramework" Version="1.3.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\IL2GPU-API\IL2GPU-API.csproj" />
+    <ProjectReference Include="..\IL2GPU-Compiler\IL2GPU-Compiler.csproj" />
+    <ProjectReference Include="..\IL2GPU-Samples\IL2GPU-Samples.csproj" />
+    <ProjectReference Include="..\IL2GPU\IL2GPU.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+
+</Project>

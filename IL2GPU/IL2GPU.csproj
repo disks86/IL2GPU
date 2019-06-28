@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <Copyright>Copyright (c) 2019 Christopher Schaefer</Copyright>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <NeutralLanguage>en-US</NeutralLanguage>
+    <AssemblyVersion>19.6.28.1</AssemblyVersion>
+    <FileVersion>19.6.28.1</FileVersion>
+    <RepositoryUrl>https://github.com/disks86/IL2GPU</RepositoryUrl>
+    <RepositoryType>GIT</RepositoryType>
+    <PackageProjectUrl>https://www.patreon.com/techtinker</PackageProjectUrl>
+    <Authors>Christopher Joseph Dean Schaefer</Authors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\IL2GPU-API\IL2GPU-API.csproj" />
+    <ProjectReference Include="..\IL2GPU-Compiler\IL2GPU-Compiler.csproj" />
+    <ProjectReference Include="..\IL2GPU-Samples\IL2GPU-Samples.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+
+</Project>

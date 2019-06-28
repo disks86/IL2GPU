@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>IL2GPU_API</RootNamespace>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <NeutralLanguage>en-US</NeutralLanguage>
+    <AssemblyVersion>19.6.28.1</AssemblyVersion>
+    <FileVersion>19.6.28.1</FileVersion>
+    <Copyright>Copyright (c) 2019 Christopher Schaefer</Copyright>
+    <Product>IL2GPU</Product>
+    <RepositoryUrl>https://github.com/disks86/IL2GPU</RepositoryUrl>
+    <RepositoryType>GIT</RepositoryType>
+    <PackageProjectUrl>https://www.patreon.com/techtinker</PackageProjectUrl>
+    <Authors>Christopher Joseph Dean Schaefer</Authors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+
+</Project>
