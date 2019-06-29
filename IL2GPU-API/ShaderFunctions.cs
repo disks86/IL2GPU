@@ -7,7 +7,7 @@ namespace IL2GPU_API
 {
     public static class ShaderFunctions
     {
-        static Vector4 Texture(Sampler2D sampler, Vector2 texcoord)
+        public static Vector4 Texture(Sampler2D sampler, Vector2 texcoord)
         {
             throw new NotImplementedException();
         }

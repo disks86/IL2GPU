@@ -65,7 +65,7 @@ namespace IL2GPU_Samples
 
             if (skyLight.IsEnabled == 1)
             {
-                //float spec = 0.0f;
+                float spec = 0.0f;
                 //Vector3 n = new Vector3.Normalize(pushConstant.model * new Vector4(normal, 0.0f));
                 //Vector3 ldir = Vector3.Normalize(skyLight.Direction);
                 //float intensity = (float)Math.Max(Vector3.Dot(n, ldir), 0.0);
@@ -83,7 +83,6 @@ namespace IL2GPU_Samples
             {
                 outputColor = 0.0f;
             }
-
         }
 
     }
