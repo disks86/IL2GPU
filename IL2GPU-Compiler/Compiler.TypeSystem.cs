@@ -2,22 +2,85 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace IL2GPU_Compiler
 {
+    public class TypeRequest
+    {
+        public Type mType = typeof(DBNull);
+        public SpirVStorageClass mStorageClass = SpirVStorageClass.StorageClassInput;
+
+        public TypeRequest()
+        {
+        }
+
+        public TypeRequest(Type type, SpirVStorageClass storageClass)
+        {
+            mType = type;
+            mStorageClass = storageClass;
+        }
+
+        public static bool operator <(TypeRequest obj1, TypeRequest obj2)
+        {
+            return Comparison(obj1, obj2) < 0;
+        }
+
+        public static bool operator >(TypeRequest obj1, TypeRequest obj2)
+        {
+            return Comparison(obj1, obj2) > 0;
+        }
+
+        public static bool operator ==(TypeRequest obj1, TypeRequest obj2)
+        {
+            return Comparison(obj1, obj2) == 0;
+        }
+
+        public static bool operator !=(TypeRequest obj1, TypeRequest obj2)
+        {
+            return Comparison(obj1, obj2) != 0;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is TypeRequest)) return false;
+
+            return this == (TypeRequest)obj;
+        }
+
+        public static bool operator <=(TypeRequest obj1, TypeRequest obj2)
+        {
+            return Comparison(obj1, obj2) <= 0;
+        }
+
+        public static bool operator >=(TypeRequest obj1, TypeRequest obj2)
+        {
+            return Comparison(obj1, obj2) >= 0;
+        }
+
+        public static int Comparison(TypeRequest obj1, TypeRequest obj2)
+        {
+            if (obj1.mType == obj2.mType && obj1.mStorageClass == obj2.mStorageClass)
+            {
+                return 0;
+            }
+
+            return -1;
+        }
+    }
     public partial class Compiler
     {
         List<UInt32> mTypeInstructions = new List<UInt32>();
         List<UInt32> mDecorateInstructions = new List<UInt32>();
-        Dictionary<Type, UInt32> mTypeIds = new Dictionary<Type, UInt32>();
+        Dictionary<TypeRequest, UInt32> mTypeIds = new Dictionary<TypeRequest, UInt32>();
 
         /// <summary>
         /// Id the type associated with a provided id.
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        Type GetIdType(UInt32 id)
+        TypeRequest GetIdType(UInt32 id)
         {
             foreach (var entry in mTypeIds)
             {
@@ -27,7 +90,18 @@ namespace IL2GPU_Compiler
                 }
             }
 
-            return typeof(DBNull);
+            return new TypeRequest();
+        }
+
+        /// <summary>
+        /// Fetch the id for the provided type. If the type doesn't exist add it to the type list and return the new id.
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="storageClass"></param>
+        /// <returns></returns>
+        UInt32 GetTypeId(Type type, SpirVStorageClass storageClass)
+        {
+            return GetTypeId(new TypeRequest(type, storageClass));
         }
 
         /// <summary>
@@ -35,17 +109,20 @@ namespace IL2GPU_Compiler
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
-        UInt32 GetTypeId(Type type)
+        UInt32 GetTypeId(TypeRequest typeRequest)
         {
+            var type = typeRequest.mType;
+            var storageClass = typeRequest.mStorageClass;
+
             //We'll treat enum blah : int32 {...} the same as int32 for now.
             if (type.IsEnum)
             {
                 type = type.GetEnumUnderlyingType();
             }
 
-            if (mTypeIds.ContainsKey(type))
+            if (mTypeIds.ContainsKey(typeRequest))
             {
-                return mTypeIds[type];
+                return mTypeIds[typeRequest];
             }
 
             var typeCode = Type.GetTypeCode(type);
@@ -101,7 +178,7 @@ namespace IL2GPU_Compiler
                     break;
                 case TypeCode.Empty:
                     {
-		                mTypeInstructions.Add(Utilities.Pack(2, SpirVOpCode.OpTypeVoid)); //size,Type
+                        mTypeInstructions.Add(Utilities.Pack(2, SpirVOpCode.OpTypeVoid)); //size,Type
                         mTypeInstructions.Add(id); //Id
                     }
                     break;
@@ -135,23 +212,23 @@ namespace IL2GPU_Compiler
                         {
                             //OpTypePointer
                             var elementType = type.GetElementType();
-                            var pointerTypeId = GetTypeId(elementType);
+                            var pointerTypeId = GetTypeId(elementType, storageClass);
 
                             mTypeInstructions.Add(Utilities.Pack(4, SpirVOpCode.OpTypePointer)); //size,Type
                             mTypeInstructions.Add(id); //Id
-                            //if (elementType == typeof(Sampler2D))
-                            //{
-                            //    mTypeInstructions.Add(spv::StorageClassUniformConstant); //Storage Class
-                            //}
-                            //else
-                            //{
-                            //    mTypeInstructions.Add(registerType.StorageClass); //Storage Class
-                            //}
+                            if (elementType == typeof(Sampler2D))
+                            {
+                                mTypeInstructions.Add((UInt32)SpirVStorageClass.StorageClassUniformConstant); //Storage Class
+                            }
+                            else
+                            {
+                                mTypeInstructions.Add((UInt32)storageClass); //Storage Class
+                            }
                             mTypeInstructions.Add(pointerTypeId); // Type
                         }
                         else if (type == typeof(Vector4))
                         {
-                            var columnTypeId = GetTypeId(typeof(float));
+                            var columnTypeId = GetTypeId(typeof(float), storageClass);
 
                             mTypeInstructions.Add(Utilities.Pack(4, SpirVOpCode.OpTypeVector)); //size,Type
                             mTypeInstructions.Add(id); //Id
@@ -160,7 +237,7 @@ namespace IL2GPU_Compiler
                         }
                         else if (type == typeof(Matrix4x4))
                         {
-                            var columnTypeId = GetTypeId(typeof(float));
+                            var columnTypeId = GetTypeId(typeof(float), storageClass);
 
                             mTypeInstructions.Add(Utilities.Pack(4, SpirVOpCode.OpTypeMatrix)); //size,Type
                             mTypeInstructions.Add(id); //Id
@@ -174,7 +251,7 @@ namespace IL2GPU_Compiler
                         }
                         else if (type == typeof(Vector3))
                         {
-                            var columnTypeId = GetTypeId(typeof(float));
+                            var columnTypeId = GetTypeId(typeof(float), storageClass);
 
                             mTypeInstructions.Add(Utilities.Pack(4, SpirVOpCode.OpTypeVector)); //size,Type
                             mTypeInstructions.Add(id); //Id
@@ -183,7 +260,7 @@ namespace IL2GPU_Compiler
                         }
                         else if (type == typeof(Vector2))
                         {
-                            var columnTypeId = GetTypeId(typeof(float));
+                            var columnTypeId = GetTypeId(typeof(float), storageClass);
 
                             mTypeInstructions.Add(Utilities.Pack(4, SpirVOpCode.OpTypeVector)); //size,Type
                             mTypeInstructions.Add(id); //Id
@@ -192,7 +269,7 @@ namespace IL2GPU_Compiler
                         }
                         else if (type.IsArray)
                         {
-                            var arrayTypeId = GetTypeId(type.GetElementType());
+                            var arrayTypeId = GetTypeId(type.GetElementType(), storageClass);
 
                             mTypeInstructions.Add(Utilities.Pack(4, SpirVOpCode.OpTypeArray)); //size,Type
                             mTypeInstructions.Add(id); //Id
@@ -205,7 +282,9 @@ namespace IL2GPU_Compiler
                             var id2 = id;
                             id = GetNextId();
 
-                            var sampledTypeId = GetTypeId(typeof(float));
+                            //OpTypeSampler
+
+                            var sampledTypeId = GetTypeId(typeof(float), storageClass);
 
                             mTypeInstructions.Add(Utilities.Pack(9, SpirVOpCode.OpTypeImage)); //size,Type
                             mTypeInstructions.Add(id2); //Result (Id)
@@ -223,7 +302,34 @@ namespace IL2GPU_Compiler
                         }
                         else //assume it's a custom structure with a valid layout.
                         {
-                            
+                            var fields = type.GetFields();
+
+                            mTypeInstructions.Add(Utilities.Pack((UInt16)(2 + fields.Length), SpirVOpCode.OpTypeStruct)); //size,Type
+                            mTypeInstructions.Add(id); //Result (Id)
+
+                            //TODO: add structure name.
+
+                            int memberIndex = 0;
+                            int memberOffset = 0;
+                            for (int i = 0; i < fields.Length; i++)
+                            {
+                                var member = fields[i];
+                                var memberType = member.GetType();
+                                var memberTypeId = GetTypeId(memberType, storageClass);
+
+                                mTypeInstructions.Add(memberTypeId);
+
+                                mDecorateInstructions.Add(Utilities.Pack(4 + 1, SpirVOpCode.OpMemberDecorate)); //size,Type
+                                mDecorateInstructions.Add(id); //target (Id)
+                                mDecorateInstructions.Add((UInt32)memberIndex); //Member (Literal)
+                                mDecorateInstructions.Add((UInt32)SpirVDecoration.DecorationOffset); //Decoration Type (Id)
+                                mDecorateInstructions.Add((UInt32)memberOffset);
+
+                                //TODO: add member names.
+
+                                memberIndex += 1;
+                                memberOffset += Marshal.SizeOf(memberType);
+                            }
                         }
                     }
                     break;

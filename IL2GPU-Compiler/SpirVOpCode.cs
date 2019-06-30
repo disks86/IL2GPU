@@ -347,7 +347,7 @@ namespace IL2GPU_Compiler
         [FieldOffset(0)]
         public SpirVOpCode Opcode;
         [FieldOffset(2)]
-        public Int16 WordCount;
+        public UInt16 WordCount;
 
         [FieldOffset(0)]
         public char Char1;

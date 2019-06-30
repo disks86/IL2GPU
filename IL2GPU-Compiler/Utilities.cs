@@ -12,7 +12,7 @@ namespace IL2GPU_Compiler
         /// <param name="wordCount"></param>
         /// <param name="opcode"></param>
         /// <returns></returns>
-        public static UInt32 Pack(Int16 wordCount, SpirVOpCode opcode)
+        public static UInt32 Pack(UInt16 wordCount, SpirVOpCode opcode)
         {
             var opcodeDescription = new PackStructure();
 

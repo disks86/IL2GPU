@@ -118,4 +118,23 @@ namespace IL2GPU_Compiler
         ImageFormatR8ui = 39
         //ImageFormatMax = 0x7fffffff,
     }
+
+    public enum SpirVStorageClass : UInt32
+    {
+        StorageClassUniformConstant = 0,
+        StorageClassInput = 1,
+        StorageClassUniform = 2,
+        StorageClassOutput = 3,
+        StorageClassWorkgroup = 4,
+        StorageClassCrossWorkgroup = 5,
+        StorageClassPrivate = 6,
+        StorageClassFunction = 7,
+        StorageClassGeneric = 8,
+        StorageClassPushConstant = 9,
+        StorageClassAtomicCounter = 10,
+        StorageClassImage = 11,
+        StorageClassStorageBuffer = 12
+        //StorageClassMax = 0x7fffffff,
+    }
+
 }
