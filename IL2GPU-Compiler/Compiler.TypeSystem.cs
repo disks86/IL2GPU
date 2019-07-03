@@ -71,9 +71,8 @@ namespace IL2GPU_Compiler
     }
     public partial class Compiler
     {
-        List<UInt32> mTypeInstructions = new List<UInt32>();
-        List<UInt32> mDecorateInstructions = new List<UInt32>();
         Dictionary<TypeRequest, UInt32> mTypeIds = new Dictionary<TypeRequest, UInt32>();
+        Dictionary<UInt32, TypeRequest> mIdTypePairs;
 
         /// <summary>
         /// Id the type associated with a provided id.
@@ -381,7 +380,10 @@ namespace IL2GPU_Compiler
                     throw new NotImplementedException();
             }
 
-            return 0;
+            mTypeIds[typeRequest] = id;
+            mIdTypePairs[id] = typeRequest;
+
+            return id;
         }
 
     }
