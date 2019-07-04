@@ -5,8 +5,8 @@
     <RootNamespace>IL2GPU_Compiler</RootNamespace>
     <Copyright>Copyright (c) 2019 Christopher Schaefer</Copyright>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <AssemblyVersion>19.6.28.1</AssemblyVersion>
-    <FileVersion>19.0.28.1</FileVersion>
+    <AssemblyVersion>19.7.4.1</AssemblyVersion>
+    <FileVersion>19.7.4.1</FileVersion>
     <NeutralLanguage>en-US</NeutralLanguage>
     <Authors>Christopher Joseph Dean Schaefer</Authors>
     <Product>IL2GPU</Product>

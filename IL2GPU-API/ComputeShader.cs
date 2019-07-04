@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace IL2GPU_Compiler
+namespace IL2GPU_API
 {
-    public static class Utilities
+    public class ComputeShader
+        : Shader
     {
-
     }
 }

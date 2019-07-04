@@ -10,13 +10,13 @@ namespace IL2GPU_Compiler
     public class TypeRequest
     {
         public Type mType = typeof(DBNull);
-        public SpirVStorageClass mStorageClass = SpirVStorageClass.StorageClassInput;
+        public spv.StorageClass mStorageClass = spv.StorageClass.StorageClassInput;
 
         public TypeRequest()
         {
         }
 
-        public TypeRequest(Type type, SpirVStorageClass storageClass)
+        public TypeRequest(Type type, spv.StorageClass storageClass)
         {
             mType = type;
             mStorageClass = storageClass;
@@ -72,7 +72,68 @@ namespace IL2GPU_Compiler
     public partial class Compiler
     {
         Dictionary<TypeRequest, UInt32> mTypeIds = new Dictionary<TypeRequest, UInt32>();
-        Dictionary<UInt32, TypeRequest> mIdTypePairs;
+        Dictionary<UInt32, TypeRequest> mIdTypePairs = new Dictionary<UInt32, TypeRequest>();
+
+        Dictionary<UInt32, UInt32> mIntegerConstants = new Dictionary<UInt32, UInt32>();
+        Dictionary<float, UInt32> mFloatConstants = new Dictionary<float, UInt32>();
+
+        /// <summary>
+        /// Returns an id for the requested value. A new constant is created if one does not exist for the provided value.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public UInt32 GetConstantId(UInt32 value)
+        {
+            if (mIntegerConstants.ContainsKey(value))
+            {
+                return mIntegerConstants[value];
+            }
+
+            string registerName="int_" + value;
+            UInt32 typeId = GetTypeId(typeof(UInt32),spv.StorageClass.StorageClassInput);
+
+            var id = GetNextId();
+            mIdTypePairs[id] = mIdTypePairs[typeId];
+            mTypeInstructions.Add(Pack(3 + 1, spv.Op.OpConstant)); //size,Type
+            mTypeInstructions.Add(typeId); //Result Type (Id)
+            mTypeInstructions.Add(id); //Result (Id)
+            mTypeInstructions.Add(value); //Literal Value
+
+            PushName(id, registerName);
+
+            mIntegerConstants[value] = id;
+
+            return id;
+        }
+
+        /// <summary>
+        /// Returns an id for the requested value. A new constant is created if one does not exist for the provided value.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public UInt32 GetConstantId(float value)
+        {
+            if (mFloatConstants.ContainsKey(value))
+            {
+                return mFloatConstants[value];
+            }
+
+            string registerName = "float_" + value;
+            UInt32 typeId = GetTypeId(typeof(float), spv.StorageClass.StorageClassInput);
+
+            var id = GetNextId();
+            mIdTypePairs[id] = mIdTypePairs[typeId];
+            mTypeInstructions.Add(Pack(3 + 1, spv.Op.OpConstant)); //size,Type
+            mTypeInstructions.Add(typeId); //Result Type (Id)
+            mTypeInstructions.Add(id); //Result (Id)
+            mTypeInstructions.Add(BitConverter.ToUInt32(BitConverter.GetBytes(value), 0)); //Literal Value
+
+            PushName(id, registerName);
+
+            mFloatConstants[value] = id;
+
+            return id;
+        }
 
         /// <summary>
         /// Id the type associated with a provided id.
@@ -98,7 +159,7 @@ namespace IL2GPU_Compiler
         /// <param name="type"></param>
         /// <param name="storageClass"></param>
         /// <returns></returns>
-        UInt32 GetTypeId(Type type, SpirVStorageClass storageClass)
+        UInt32 GetTypeId(Type type, spv.StorageClass storageClass)
         {
             return GetTypeId(new TypeRequest(type, storageClass));
         }
@@ -131,13 +192,13 @@ namespace IL2GPU_Compiler
             {
                 case TypeCode.Boolean:
                     {
-                        mTypeInstructions.Add(Utilities.Pack(2, SpirVOpCode.OpTypeBool)); //size,Type
+                        mTypeInstructions.Add(Pack(2, spv.Op.OpTypeBool)); //size,Type
                         mTypeInstructions.Add(id); //Id
                     }
                     break;
                 case TypeCode.Byte:
                     {
-                        mTypeInstructions.Add(Utilities.Pack(4, SpirVOpCode.OpTypeInt)); //size,Type
+                        mTypeInstructions.Add(Pack(4, spv.Op.OpTypeInt)); //size,Type
                         mTypeInstructions.Add(id); //Id
                         mTypeInstructions.Add(8); //Number of bits.
                         mTypeInstructions.Add(0); //Signedness (0 = unsigned,1 = signed)
@@ -145,7 +206,7 @@ namespace IL2GPU_Compiler
                     break;
                 case TypeCode.Char:
                     {
-                        mTypeInstructions.Add(Utilities.Pack(4, SpirVOpCode.OpTypeInt)); //size,Type
+                        mTypeInstructions.Add(Pack(4, spv.Op.OpTypeInt)); //size,Type
                         mTypeInstructions.Add(id); //Id
                         mTypeInstructions.Add(8); //Number of bits.
                         mTypeInstructions.Add(0); //Signedness (0 = unsigned,1 = signed)
@@ -155,35 +216,35 @@ namespace IL2GPU_Compiler
                     {
                         throw new NotImplementedException();
                     }
-                    break;
+                    //break;
                 case TypeCode.DBNull:
                     {
                         throw new NotImplementedException();
                     }
-                    break;
+                    //break;
                 case TypeCode.Decimal:
                     {
-                        mTypeInstructions.Add(Utilities.Pack(3, SpirVOpCode.OpTypeFloat)); //size,Type
+                        mTypeInstructions.Add(Pack(3, spv.Op.OpTypeFloat)); //size,Type
                         mTypeInstructions.Add(id); //Id
                         mTypeInstructions.Add(128); //Number of bits.
                     }
                     break;
                 case TypeCode.Double:
                     {
-                        mTypeInstructions.Add(Utilities.Pack(3, SpirVOpCode.OpTypeFloat)); //size,Type
+                        mTypeInstructions.Add(Pack(3, spv.Op.OpTypeFloat)); //size,Type
                         mTypeInstructions.Add(id); //Id
                         mTypeInstructions.Add(64); //Number of bits.
                     }
                     break;
                 case TypeCode.Empty:
                     {
-                        mTypeInstructions.Add(Utilities.Pack(2, SpirVOpCode.OpTypeVoid)); //size,Type
+                        mTypeInstructions.Add(Pack(2, spv.Op.OpTypeVoid)); //size,Type
                         mTypeInstructions.Add(id); //Id
                     }
                     break;
                 case TypeCode.Int16:
                     {
-                        mTypeInstructions.Add(Utilities.Pack(4, SpirVOpCode.OpTypeInt)); //size,Type
+                        mTypeInstructions.Add(Pack(4, spv.Op.OpTypeInt)); //size,Type
                         mTypeInstructions.Add(id); //Id
                         mTypeInstructions.Add(16); //Number of bits.
                         mTypeInstructions.Add(1); //Signedness (0 = unsigned,1 = signed)
@@ -191,7 +252,7 @@ namespace IL2GPU_Compiler
                     break;
                 case TypeCode.Int32:
                     {
-                        mTypeInstructions.Add(Utilities.Pack(4, SpirVOpCode.OpTypeInt)); //size,Type
+                        mTypeInstructions.Add(Pack(4, spv.Op.OpTypeInt)); //size,Type
                         mTypeInstructions.Add(id); //Id
                         mTypeInstructions.Add(32); //Number of bits.
                         mTypeInstructions.Add(1); //Signedness (0 = unsigned,1 = signed)
@@ -199,7 +260,7 @@ namespace IL2GPU_Compiler
                     break;
                 case TypeCode.Int64:
                     {
-                        mTypeInstructions.Add(Utilities.Pack(4, SpirVOpCode.OpTypeInt)); //size,Type
+                        mTypeInstructions.Add(Pack(4, spv.Op.OpTypeInt)); //size,Type
                         mTypeInstructions.Add(id); //Id
                         mTypeInstructions.Add(64); //Number of bits.
                         mTypeInstructions.Add(1); //Signedness (0 = unsigned,1 = signed)
@@ -213,11 +274,11 @@ namespace IL2GPU_Compiler
                             var elementType = type.GetElementType();
                             var pointerTypeId = GetTypeId(elementType, storageClass);
 
-                            mTypeInstructions.Add(Utilities.Pack(4, SpirVOpCode.OpTypePointer)); //size,Type
+                            mTypeInstructions.Add(Pack(4, spv.Op.OpTypePointer)); //size,Type
                             mTypeInstructions.Add(id); //Id
                             if (elementType == typeof(Sampler2D))
                             {
-                                mTypeInstructions.Add((UInt32)SpirVStorageClass.StorageClassUniformConstant); //Storage Class
+                                mTypeInstructions.Add((UInt32)spv.StorageClass.StorageClassUniformConstant); //Storage Class
                             }
                             else
                             {
@@ -229,7 +290,7 @@ namespace IL2GPU_Compiler
                         {
                             var columnTypeId = GetTypeId(typeof(float), storageClass);
 
-                            mTypeInstructions.Add(Utilities.Pack(4, SpirVOpCode.OpTypeVector)); //size,Type
+                            mTypeInstructions.Add(Pack(4, spv.Op.OpTypeVector)); //size,Type
                             mTypeInstructions.Add(id); //Id
                             mTypeInstructions.Add(columnTypeId); //Component/Column Type
                             mTypeInstructions.Add(4); //ComponentCount
@@ -238,21 +299,21 @@ namespace IL2GPU_Compiler
                         {
                             var columnTypeId = GetTypeId(typeof(float), storageClass);
 
-                            mTypeInstructions.Add(Utilities.Pack(4, SpirVOpCode.OpTypeMatrix)); //size,Type
+                            mTypeInstructions.Add(Pack(4, spv.Op.OpTypeMatrix)); //size,Type
                             mTypeInstructions.Add(id); //Id
                             mTypeInstructions.Add(columnTypeId); //Component/Column Type
                             mTypeInstructions.Add(4); //ComponentCount
 
-                            mDecorateInstructions.Add(Utilities.Pack(3, SpirVOpCode.OpDecorate)); //size,Type
+                            mDecorateInstructions.Add(Pack(3, spv.Op.OpDecorate)); //size,Type
                             mDecorateInstructions.Add(id); //target (Id)
-                            mDecorateInstructions.Add((UInt32)SpirVDecoration.DecorationColMajor); //Decoration Type (Id)	
+                            mDecorateInstructions.Add((UInt32)spv.Decoration.DecorationColMajor); //Decoration Type (Id)	
                             //mDecorateInstructions.Add((UInt32)spv::DecorationRowMajor); //Decoration Type (Id)	
                         }
                         else if (type == typeof(Vector3))
                         {
                             var columnTypeId = GetTypeId(typeof(float), storageClass);
 
-                            mTypeInstructions.Add(Utilities.Pack(4, SpirVOpCode.OpTypeVector)); //size,Type
+                            mTypeInstructions.Add(Pack(4, spv.Op.OpTypeVector)); //size,Type
                             mTypeInstructions.Add(id); //Id
                             mTypeInstructions.Add(columnTypeId); //Component/Column Type
                             mTypeInstructions.Add(3); //ComponentCount
@@ -261,7 +322,7 @@ namespace IL2GPU_Compiler
                         {
                             var columnTypeId = GetTypeId(typeof(float), storageClass);
 
-                            mTypeInstructions.Add(Utilities.Pack(4, SpirVOpCode.OpTypeVector)); //size,Type
+                            mTypeInstructions.Add(Pack(4, spv.Op.OpTypeVector)); //size,Type
                             mTypeInstructions.Add(id); //Id
                             mTypeInstructions.Add(columnTypeId); //Component/Column Type
                             mTypeInstructions.Add(2); //ComponentCount
@@ -270,7 +331,7 @@ namespace IL2GPU_Compiler
                         {
                             var arrayTypeId = GetTypeId(type.GetElementType(), storageClass);
 
-                            mTypeInstructions.Add(Utilities.Pack(4, SpirVOpCode.OpTypeArray)); //size,Type
+                            mTypeInstructions.Add(Pack(4, spv.Op.OpTypeArray)); //size,Type
                             mTypeInstructions.Add(id); //Id
                             mTypeInstructions.Add(arrayTypeId); // Type
                             mTypeInstructions.Add(0 /*mConstantIntegerIds[type.]*/); // Length
@@ -285,17 +346,17 @@ namespace IL2GPU_Compiler
 
                             var sampledTypeId = GetTypeId(typeof(float), storageClass);
 
-                            mTypeInstructions.Add(Utilities.Pack(9, SpirVOpCode.OpTypeImage)); //size,Type
+                            mTypeInstructions.Add(Pack(9, spv.Op.OpTypeImage)); //size,Type
                             mTypeInstructions.Add(id2); //Result (Id)
                             mTypeInstructions.Add(sampledTypeId); //Sampled Type (Id)
-                            mTypeInstructions.Add((UInt32)SpirVDim.Dim2D); //dimensionality
+                            mTypeInstructions.Add((UInt32)spv.Dim.Dim2D); //dimensionality
                             mTypeInstructions.Add(0); //Depth
                             mTypeInstructions.Add(0); //Arrayed
                             mTypeInstructions.Add(0); //MS
                             mTypeInstructions.Add(1); //Sampled
-                            mTypeInstructions.Add((UInt32)SpirVImageFormat.ImageFormatUnknown); //Sampled
+                            mTypeInstructions.Add((UInt32)spv.ImageFormat.ImageFormatUnknown); //Sampled
 
-                            mTypeInstructions.Add(Utilities.Pack(3, SpirVOpCode.OpTypeSampledImage)); //size,Type
+                            mTypeInstructions.Add(Pack(3, spv.Op.OpTypeSampledImage)); //size,Type
                             mTypeInstructions.Add(id); //Result (Id)
                             mTypeInstructions.Add(id2); //Type (Id)
                         }
@@ -303,7 +364,7 @@ namespace IL2GPU_Compiler
                         {
                             var fields = type.GetFields();
 
-                            mTypeInstructions.Add(Utilities.Pack((UInt16)(2 + fields.Length), SpirVOpCode.OpTypeStruct)); //size,Type
+                            mTypeInstructions.Add(Pack((UInt16)(2 + fields.Length), spv.Op.OpTypeStruct)); //size,Type
                             mTypeInstructions.Add(id); //Result (Id)
 
                             //TODO: add structure name.
@@ -318,10 +379,10 @@ namespace IL2GPU_Compiler
 
                                 mTypeInstructions.Add(memberTypeId);
 
-                                mDecorateInstructions.Add(Utilities.Pack(4 + 1, SpirVOpCode.OpMemberDecorate)); //size,Type
+                                mDecorateInstructions.Add(Pack(4 + 1, spv.Op.OpMemberDecorate)); //size,Type
                                 mDecorateInstructions.Add(id); //target (Id)
                                 mDecorateInstructions.Add((UInt32)memberIndex); //Member (Literal)
-                                mDecorateInstructions.Add((UInt32)SpirVDecoration.DecorationOffset); //Decoration Type (Id)
+                                mDecorateInstructions.Add((UInt32)spv.Decoration.DecorationOffset); //Decoration Type (Id)
                                 mDecorateInstructions.Add((UInt32)memberOffset);
 
                                 //TODO: add member names.
@@ -334,7 +395,7 @@ namespace IL2GPU_Compiler
                     break;
                 case TypeCode.SByte:
                     {
-                        mTypeInstructions.Add(Utilities.Pack(4, SpirVOpCode.OpTypeInt)); //size,Type
+                        mTypeInstructions.Add(Pack(4, spv.Op.OpTypeInt)); //size,Type
                         mTypeInstructions.Add(id); //Id
                         mTypeInstructions.Add(8); //Number of bits.
                         mTypeInstructions.Add(1); //Signedness (0 = unsigned,1 = signed)
@@ -342,7 +403,7 @@ namespace IL2GPU_Compiler
                     break;
                 case TypeCode.Single:
                     {
-                        mTypeInstructions.Add(Utilities.Pack(3, SpirVOpCode.OpTypeFloat)); //size,Type
+                        mTypeInstructions.Add(Pack(3, spv.Op.OpTypeFloat)); //size,Type
                         mTypeInstructions.Add(id); //Id
                         mTypeInstructions.Add(32); //Number of bits.
                     }
@@ -354,7 +415,7 @@ namespace IL2GPU_Compiler
                     break;
                 case TypeCode.UInt16:
                     {
-                        mTypeInstructions.Add(Utilities.Pack(4, SpirVOpCode.OpTypeInt)); //size,Type
+                        mTypeInstructions.Add(Pack(4, spv.Op.OpTypeInt)); //size,Type
                         mTypeInstructions.Add(id); //Id
                         mTypeInstructions.Add(16); //Number of bits.
                         mTypeInstructions.Add(0); //Signedness (0 = unsigned,1 = signed)
@@ -362,7 +423,7 @@ namespace IL2GPU_Compiler
                     break;
                 case TypeCode.UInt32:
                     {
-                        mTypeInstructions.Add(Utilities.Pack(4, SpirVOpCode.OpTypeInt)); //size,Type
+                        mTypeInstructions.Add(Pack(4, spv.Op.OpTypeInt)); //size,Type
                         mTypeInstructions.Add(id); //Id
                         mTypeInstructions.Add(32); //Number of bits.
                         mTypeInstructions.Add(0); //Signedness (0 = unsigned,1 = signed)
@@ -370,7 +431,7 @@ namespace IL2GPU_Compiler
                     break;
                 case TypeCode.UInt64:
                     {
-                        mTypeInstructions.Add(Utilities.Pack(4, SpirVOpCode.OpTypeInt)); //size,Type
+                        mTypeInstructions.Add(Pack(4, spv.Op.OpTypeInt)); //size,Type
                         mTypeInstructions.Add(id); //Id
                         mTypeInstructions.Add(64); //Number of bits.
                         mTypeInstructions.Add(0); //Signedness (0 = unsigned,1 = signed)
