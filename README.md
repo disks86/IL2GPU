@@ -1,5 +1,4 @@
 # IL2GPU
-==========
 
 [![Build status](https://ci.appveyor.com/api/projects/status/ywnff0i6o3r2nu1w?svg=true)](https://ci.appveyor.com/project/disks86/il2gpu)
 
