@@ -10,4 +10,6 @@ Join the discord server (VKx) to communicate with the community. https://discord
 
 For the latest project news visit my blog. http://techtinker.blogspot.com/
 
+For commentary and tech demos visit my youtube channel. https://www.youtube.com/channel/UCyUaxDCnCsEhZsugxzA1-qA
+
 Special thanks to my patrons over on Patreon. https://www.patreon.com/techtinker
