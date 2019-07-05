@@ -4,7 +4,7 @@
 
 Compile MSIL assemblies to Spir-V
 
-VK9 is released under a MIT license refer to the LICENSE.md file for more information.
+IL2GPU is released under a MIT license refer to the LICENSE.md file for more information.
 
 Join the discord server (VKx) to communicate with the community. https://discord.gg/mjWm8DK
 
