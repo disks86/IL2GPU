@@ -188,6 +188,8 @@ namespace IL2GPU_Compiler
             var typeCode = Type.GetTypeCode(type);
             var id = GetNextId();
 
+            PushName(id, type.Name);
+
             switch (typeCode)
             {
                 case TypeCode.Boolean:
@@ -367,8 +369,6 @@ namespace IL2GPU_Compiler
                             mTypeInstructions.Add(Pack((UInt16)(2 + fields.Length), spv.Op.OpTypeStruct)); //size,Type
                             mTypeInstructions.Add(id); //Result (Id)
 
-                            //TODO: add structure name.
-
                             int memberIndex = 0;
                             int memberOffset = 0;
                             for (int i = 0; i < fields.Length; i++)
@@ -385,7 +385,7 @@ namespace IL2GPU_Compiler
                                 mDecorateInstructions.Add((UInt32)spv.Decoration.DecorationOffset); //Decoration Type (Id)
                                 mDecorateInstructions.Add((UInt32)memberOffset);
 
-                                //TODO: add member names.
+                                PushMemberName(id, member.Name, (UInt32)memberIndex);
 
                                 memberIndex += 1;
                                 memberOffset += Marshal.SizeOf(memberType);

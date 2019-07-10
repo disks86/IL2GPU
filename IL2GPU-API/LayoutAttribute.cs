@@ -24,6 +24,11 @@ namespace IL2GPU_API
         public int Binding { get; set; } = -1;
 
         /// <summary>
+        /// Part of the main linkage between the API and SPIR-V modules for memory buffers, images, etc. See the API specification for more informatio
+        /// </summary>
+        public int DescriptorSet { get; set; } = 0;
+
+        /// <summary>
         /// The "align" qualifier can only be used on blocks or block members, and only for blocks declared with "std140" or "std430" layouts.The "align" qualifier makes the start of each block member have a minimum byte alignment. It does not affect the internal layout within each member, which will still follow the std140 or std430 rules.
         /// </summary>
         public int Align { get; set; } = -1;
