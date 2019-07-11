@@ -68,6 +68,8 @@ namespace IL2GPU_Compiler
                                     {
                                         storageClass = spv.StorageClass.StorageClassInput;
 
+                                        mInputRegisters.Add(id);
+
                                         mDecorateInstructions.Add(Pack(3 + 1, spv.Op.OpDecorate)); //size,Type
                                         mDecorateInstructions.Add(id); //target (Id)
                                         mDecorateInstructions.Add((UInt32)spv.Decoration.DecorationLocation); //Decoration Type (Id)
@@ -77,6 +79,8 @@ namespace IL2GPU_Compiler
                                 case IL2GPU_API.Direction.Output:
                                     {
                                         storageClass = spv.StorageClass.StorageClassOutput;
+
+                                        mOutputRegisters.Add(id);
 
                                         if (layout.BuiltIn == IL2GPU_API.BuiltIn.None)
                                         {
